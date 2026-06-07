@@ -48,6 +48,8 @@ namespace Emilia.Toolbar.Editor
 
         private bool isFocus;
         private int selectedIndex;
+        private Vector2 switchScrollPosition;
+        private bool scrollSelectedSwitchIntoView;
         private string titleText;
         private List<FixedSwitchInfo> fixedSwitchInfos;
         private List<SwitchGroup> switchGroups;
@@ -60,6 +62,8 @@ namespace Emilia.Toolbar.Editor
             this.switchGroups = switchInfoCollection?.switchGroups ?? new List<SwitchGroup>();
             this.switchInfosInDisplayOrder = switchInfoCollection?.GetSwitchInfosInDisplayOrder() ?? new List<SwitchInfo>();
             this.selectedIndex = 0;
+            this.switchScrollPosition = Vector2.zero;
+            this.scrollSelectedSwitchIntoView = true;
         }
 
         public void Switch()
@@ -67,6 +71,8 @@ namespace Emilia.Toolbar.Editor
             if (switchInfosInDisplayOrder.Count == 0) return;
             selectedIndex++;
             if (selectedIndex >= switchInfosInDisplayOrder.Count) selectedIndex = 0;
+            scrollSelectedSwitchIntoView = true;
+            Repaint();
         }
 
         public void Execute()
@@ -180,22 +186,35 @@ namespace Emilia.Toolbar.Editor
 
             Event evt = Event.current;
             int displayIndex = 0;
-            int itemCount = 0;
+
+            Rect scrollViewRect = GUILayoutUtility.GetRect(1, 1, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+            float contentHeight = GetSwitchContentHeight();
+            float contentWidth = GetSwitchContentWidth(scrollViewRect.width, contentHeight, scrollViewRect.height);
+            Rect contentRect = new Rect(0, 0, contentWidth, contentHeight);
+
+            EnsureSelectedSwitchVisible(scrollViewRect.height, contentHeight);
+            switchScrollPosition = GUI.BeginScrollView(scrollViewRect, switchScrollPosition, contentRect);
+
+            float y = 0;
 
             for (int groupIndex = 0; groupIndex < switchGroups.Count; groupIndex++)
             {
                 SwitchGroup group = switchGroups[groupIndex];
                 if (group?.switchInfos == null || group.switchInfos.Count == 0) continue;
 
-                DrawSwitchGroupTitle(group);
+                if (string.IsNullOrEmpty(group.title) == false)
+                {
+                    Rect titleRect = new Rect(0, y, contentWidth, GroupTitleHeight);
+                    DrawSwitchGroupTitle(titleRect, group);
+                    y += GroupTitleHeight;
+                }
+
                 for (int infoIndex = 0; infoIndex < group.switchInfos.Count; infoIndex++)
                 {
-                    if (itemCount >= MaxItemCount) return;
-
                     SwitchInfo info = group.switchInfos[infoIndex];
                     if (info == null) continue;
 
-                    Rect rect = GUILayoutUtility.GetRect(1, ItemHeight, GUILayout.ExpandWidth(true));
+                    Rect rect = new Rect(0, y, contentWidth, ItemHeight);
                     bool isSelected = displayIndex == selectedIndex;
                     bool isMouseOver = rect.Contains(evt.mousePosition);
 
@@ -203,17 +222,118 @@ namespace Emilia.Toolbar.Editor
                     DrawSwitchItemContent(rect, info);
                     HandleItemClick(evt, isMouseOver, info.action);
 
+                    y += ItemHeight;
                     displayIndex++;
-                    itemCount++;
                 }
             }
+
+            GUI.EndScrollView();
         }
 
-        private void DrawSwitchGroupTitle(SwitchGroup group)
+        private float GetSwitchContentHeight()
         {
-            if (string.IsNullOrEmpty(group.title)) return;
+            float height = 0;
 
-            Rect rect = GUILayoutUtility.GetRect(1, GroupTitleHeight, GUILayout.ExpandWidth(true));
+            for (int groupIndex = 0; groupIndex < switchGroups.Count; groupIndex++)
+            {
+                SwitchGroup group = switchGroups[groupIndex];
+                if (group?.switchInfos == null || group.switchInfos.Count == 0) continue;
+
+                if (string.IsNullOrEmpty(group.title) == false) height += GroupTitleHeight;
+
+                for (int infoIndex = 0; infoIndex < group.switchInfos.Count; infoIndex++)
+                {
+                    if (group.switchInfos[infoIndex] != null) height += ItemHeight;
+                }
+            }
+
+            return height;
+        }
+
+        private float GetSwitchContentWidth(float scrollViewWidth, float contentHeight, float viewportHeight)
+        {
+            if (contentHeight <= viewportHeight) return scrollViewWidth;
+
+            float scrollBarWidth = GUI.skin.verticalScrollbar.fixedWidth;
+            if (scrollBarWidth <= 0) scrollBarWidth = 16;
+            return Mathf.Max(0, scrollViewWidth - scrollBarWidth);
+        }
+
+        private void EnsureSelectedSwitchVisible(float viewportHeight, float contentHeight)
+        {
+            if (scrollSelectedSwitchIntoView == false) return;
+            if (Event.current.type != EventType.Repaint) return;
+
+            bool hasItemPosition = TryGetSwitchItemPosition(selectedIndex, out float itemTop, out float itemBottom);
+            if (hasItemPosition == false || viewportHeight <= 0)
+            {
+                scrollSelectedSwitchIntoView = false;
+                return;
+            }
+
+            switchScrollPosition.y = CalculateScrollYToKeepItemVisible(switchScrollPosition.y, itemTop, itemBottom, viewportHeight, contentHeight);
+            switchScrollPosition.x = 0;
+            scrollSelectedSwitchIntoView = false;
+        }
+
+        private bool TryGetSwitchItemPosition(int index, out float itemTop, out float itemBottom)
+        {
+            itemTop = 0;
+            itemBottom = 0;
+
+            if (index < 0) return false;
+
+            float y = 0;
+            int displayIndex = 0;
+
+            for (int groupIndex = 0; groupIndex < switchGroups.Count; groupIndex++)
+            {
+                SwitchGroup group = switchGroups[groupIndex];
+                if (group?.switchInfos == null || group.switchInfos.Count == 0) continue;
+
+                if (string.IsNullOrEmpty(group.title) == false) y += GroupTitleHeight;
+
+                for (int infoIndex = 0; infoIndex < group.switchInfos.Count; infoIndex++)
+                {
+                    SwitchInfo info = group.switchInfos[infoIndex];
+                    if (info == null) continue;
+
+                    if (displayIndex == index)
+                    {
+                        itemTop = y;
+                        itemBottom = y + ItemHeight;
+                        return true;
+                    }
+
+                    y += ItemHeight;
+                    displayIndex++;
+                }
+            }
+
+            return false;
+        }
+
+        private static float CalculateScrollYToKeepItemVisible(float scrollY, float itemTop, float itemBottom, float viewportHeight, float contentHeight)
+        {
+            if (viewportHeight <= 0 || contentHeight <= viewportHeight) return 0;
+
+            float nextScrollY = scrollY;
+
+            if (itemTop < nextScrollY)
+            {
+                nextScrollY = itemTop;
+            }
+            else if (itemBottom > nextScrollY + viewportHeight)
+            {
+                nextScrollY = itemBottom - viewportHeight;
+            }
+
+            float maxScrollY = Mathf.Max(0, contentHeight - viewportHeight);
+            return Mathf.Clamp(nextScrollY, 0, maxScrollY);
+        }
+
+        private void DrawSwitchGroupTitle(Rect rect, SwitchGroup group)
+        {
             GUI.color = new Color(1, 1, 1, 0.06f);
             GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture, ScaleMode.StretchToFill, true, 0.5f);
             GUI.color = Color.white;

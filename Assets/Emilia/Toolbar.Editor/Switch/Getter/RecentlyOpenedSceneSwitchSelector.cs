@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Emilia.Kit.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -30,17 +31,30 @@ namespace Emilia.Toolbar.Editor
             for (var i = 0; i < onRecentlyOpenScenePaths.Count; i++)
             {
                 string scenePath = onRecentlyOpenScenePaths[i];
-                SceneAsset sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
-                if (sceneAsset == null) continue;
+                if (string.IsNullOrEmpty(scenePath)) continue;
+                if (string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(scenePath))) continue;
+
+                string label = Path.GetFileNameWithoutExtension(scenePath);
+                if (string.IsNullOrEmpty(label)) continue;
+
+                string capturedScenePath = scenePath;
 
                 infos.Add(new SwitchInfo {
-                    label = sceneAsset.name,
+                    label = label,
                     icon = EditorGUIUtility.FindTexture("UnityLogo"),
-                    action = () => OpenAssetUtility.Open(sceneAsset)
+                    action = () => OpenScene(capturedScenePath)
                 });
             }
 
             return new SwitchGroup("最近打开的场景", priority, infos);
+        }
+
+        private static void OpenScene(string assetPath)
+        {
+            SceneAsset sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(assetPath);
+            if (sceneAsset == null) return;
+
+            OpenAssetUtility.Open(sceneAsset);
         }
 
         private static void OnSceneOpened(Scene scene, OpenSceneMode mode)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Emilia.Kit.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -31,17 +32,30 @@ namespace Emilia.Toolbar.Editor
             for (var i = 0; i < onRecentlyOpenPrefabPaths.Count; i++)
             {
                 string prefabPath = onRecentlyOpenPrefabPaths[i];
-                GameObject prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-                if (prefabAsset == null) continue;
+                if (string.IsNullOrEmpty(prefabPath)) continue;
+                if (string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(prefabPath))) continue;
+
+                string label = Path.GetFileNameWithoutExtension(prefabPath);
+                if (string.IsNullOrEmpty(label)) continue;
+
+                string capturedPrefabPath = prefabPath;
 
                 infos.Add(new SwitchInfo {
-                    label = prefabAsset.name,
+                    label = label,
                     icon = EditorGUIUtility.FindTexture("Prefab Icon"),
-                    action = () => OpenAssetUtility.Open(prefabAsset)
+                    action = () => OpenPrefab(capturedPrefabPath)
                 });
             }
 
             return new SwitchGroup("最近打开的预制体", priority, infos);
+        }
+
+        private static void OpenPrefab(string assetPath)
+        {
+            GameObject prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+            if (prefabAsset == null) return;
+
+            OpenAssetUtility.Open(prefabAsset);
         }
 
         private static void OnPrefabStageOpened(PrefabStage prefabStage)
