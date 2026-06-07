@@ -1,0 +1,21 @@
+{
+  "name": "Emilia.Toolbar.Editor",
+  "rootNamespace": "Emilia.Toolbar.Editor",
+  "references": [
+    "GUID:b56a80d637f16264186fc4837331915e",
+    "GUID:d9cefae20c909d449a8545e0c915e664"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "ODIN_INSPECTOR"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
