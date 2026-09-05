@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Emilia.Toolbar.Editor
 {
     [Serializable]
-    public class ConsoleSetting : LocalSetting<ConsoleSetting>
+    public class ConsoleSetting : ProjectLocalSetting<ConsoleSetting>
     {
         [LabelText("收集MenuItem")]
         public bool isCollectMenuItem;

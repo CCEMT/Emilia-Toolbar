@@ -5,7 +5,7 @@ using Emilia.Kit;
 namespace Emilia.Toolbar.Editor
 {
     [Serializable]
-    public class TitleCommandCustomSetting : LocalSetting<TitleCommandCustomSetting>
+    public class TitleCommandCustomSetting : ProjectLocalSetting<TitleCommandCustomSetting>
     {
         public List<TitleCustomCommandInfo> customCommands = new List<TitleCustomCommandInfo>();
     }

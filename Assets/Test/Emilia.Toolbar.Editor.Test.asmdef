@@ -14,6 +14,9 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
     "defineConstraints": [
         "ODIN_INSPECTOR"
     ],

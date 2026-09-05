@@ -3,7 +3,7 @@ using Emilia.Kit;
 
 namespace Emilia.Toolbar.Editor
 {
-    public class RingCommandCustomSetting : LocalSetting<RingCommandCustomSetting>
+    public class RingCommandCustomSetting : ProjectLocalSetting<RingCommandCustomSetting>
     {
         public List<RingCustomCommandInfo> ringCustomCommandInfos = new List<RingCustomCommandInfo>();
         public List<FixedCustomCommandInfo> leftFixedCustomCommandInfos = new List<FixedCustomCommandInfo>();

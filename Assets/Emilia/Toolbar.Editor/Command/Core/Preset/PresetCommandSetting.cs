@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Emilia.Toolbar.Editor
 {
     [Serializable]
-    public class PresetCommandSetting : LocalSetting<PresetCommandSetting>
+    public class PresetCommandSetting : ProjectLocalSetting<PresetCommandSetting>
     {
         [SerializeField]
         public List<PresetCommandInfo> presetCommandInfos = new List<PresetCommandInfo>();

@@ -44,5 +44,47 @@ namespace Test
         {
             AssetDatabase.OpenAsset(asset);
         }
+
+        [Command("Test1", "打开资源", "测试")]
+        public static void Test1() { }
+        
+        [Command("Test2", "打开资源", "测试")]
+        public static void Test2() { }
+        [Command("Test3", "打开资源", "测试")]
+        public static void Test3() { }
+        [Command("Test4", "打开资源", "测试")]
+        public static void Test4() { }
+        [Command("Test5", "打开资源", "测试")]
+        public static void Test5() { }
+        [Command("Test6", "打开资源", "测试")]
+        public static void Test6() { }
+        [Command("Test7", "打开资源", "测试")]
+        public static void Test7() { }
+        [Command("Test8", "打开资源", "测试")]
+        public static void Test8() { }
+        [Command("Test9", "打开资源", "测试")]
+        public static void Test9() { }
+        [Command("Test10", "打开资源", "测试")]
+        public static void Test10() { }
+        [Command("Test11", "打开资源", "测试")]
+        public static void Test11() { }
+        [Command("Test12", "打开资源", "测试")]
+        public static void Test12() { }
+        [Command("Test13", "打开资源", "测试")]
+        public static void Test13() { }
+        [Command("Test14", "打开资源", "测试")]
+        public static void Test14() { }
+        [Command("Test15", "打开资源", "测试")]
+        public static void Test15() { }
+        [Command("Test16", "打开资源", "测试")]
+        public static void Test16() { }
+        [Command("Test17", "打开资源", "测试")]
+        public static void Test17() { }
+        [Command("Test18", "打开资源", "测试")]
+        public static void Test18() { }
+        [Command("Test19", "打开资源", "测试")]
+        public static void Test19() { }
+        [Command("Test20", "打开资源", "测试")]
+        public static void Test20() { }
     }
 }
