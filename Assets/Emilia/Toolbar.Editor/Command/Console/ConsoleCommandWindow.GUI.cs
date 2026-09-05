@@ -10,6 +10,9 @@ namespace Emilia.Toolbar.Editor
     public partial class ConsoleCommandWindow
     {
         private Vector2 scrollPosition;
+        private int? scrollToCommandIndex;
+        private string scrollToCommandSearchTerms;
+        private string scrollToCommandCategory;
 
         private void OnSearchGUI()
         {
@@ -140,7 +143,16 @@ namespace Emilia.Toolbar.Editor
 
         private void OnCommandListGUI()
         {
-            if (commandResult == null || commandResult.Count == 0) return;
+            if (commandResult == null || commandResult.Count == 0)
+            {
+                scrollToCommandIndex = null;
+                return;
+            }
+
+            bool scrollRequestIsCurrent = scrollToCommandIndex == selectedIndex &&
+                                          scrollToCommandSearchTerms == searchTerms &&
+                                          scrollToCommandCategory == currentCategory;
+            if (scrollRequestIsCurrent == false) scrollToCommandIndex = null;
 
             int count = commandResult.Count;
             for (int i = 0; i < count; i++)
@@ -149,13 +161,21 @@ namespace Emilia.Toolbar.Editor
                 OnItemGUI(commandInfo, i);
 
                 Rect rect = GUILayoutUtility.GetLastRect();
+
+                if (scrollToCommandIndex == i && Event.current.type == EventType.Repaint)
+                {
+                    GUI.ScrollTo(rect);
+                    scrollToCommandIndex = null;
+                }
+
                 bool isMouseOver = rect.Contains(Event.current.mousePosition);
 
                 if (this.eventType == EventType.MouseMove)
                 {
-                    if (isMouseOver)
+                    if (isMouseOver && selectedIndex != i)
                     {
                         selectedIndex = i;
+                        scrollToCommandIndex = null;
                         Repaint();
                     }
                 }

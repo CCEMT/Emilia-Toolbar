@@ -1,7 +1,11 @@
 {
     "name": "Emilia.Toolbar.Editor.Test",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:d9cefae20c909d449a8545e0c915e664",
+        "GUID:b56a80d637f16264186fc4837331915e",
+        "GUID:5318cc18166ae3f45b2dde0e99c7b36b"
+    ],
     "includePlatforms": [
         "Editor"
     ],

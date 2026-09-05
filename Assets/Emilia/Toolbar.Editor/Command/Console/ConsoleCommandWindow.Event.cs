@@ -25,16 +25,28 @@ namespace Emilia.Toolbar.Editor
             }
             else if (evt.type == EventType.KeyDown && evt.keyCode == KeyCode.DownArrow)
             {
-                selectedIndex++;
-                selectedIndex = Mathf.Clamp(selectedIndex, 0, commandResult.Count - 1);
+                MoveSelection(1);
             }
             else if (evt.type == EventType.KeyDown && evt.keyCode == KeyCode.UpArrow)
             {
-                selectedIndex--;
-                selectedIndex = Mathf.Clamp(selectedIndex, 0, commandResult.Count - 1);
+                MoveSelection(-1);
             }
 
             this.executeCommand = evt.type == EventType.KeyDown && evt.keyCode is KeyCode.Return or KeyCode.KeypadEnter or KeyCode.Tab;
+        }
+
+        private void MoveSelection(int offset)
+        {
+            if (commandResult == null || commandResult.Count == 0) return;
+
+            int nextSelectedIndex = Mathf.Clamp(selectedIndex + offset, 0, commandResult.Count - 1);
+            if (nextSelectedIndex == selectedIndex) return;
+
+            selectedIndex = nextSelectedIndex;
+            scrollToCommandIndex = nextSelectedIndex;
+            scrollToCommandSearchTerms = searchTerms;
+            scrollToCommandCategory = currentCategory;
+            Repaint();
         }
 
         private void OnAfterGUIEvent()
